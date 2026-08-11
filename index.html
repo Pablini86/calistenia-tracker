@@ -322,6 +322,18 @@
     </div>
 
     <div id="byHistory" style="display:none"></div>
+
+    <details class="info" id="backupDetails">
+      <summary>Respaldo y transferir a otro dispositivo
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="info-body">
+        <p>Si cambias de dirección web (por ejemplo, de GitHub Pages a la nueva de Vercel), tus entrenos no se mueven solos: cópialos aquí y pégalos allá.</p>
+        <button type="button" class="btn-primary" id="exportBtn" style="margin-bottom:12px;">Copiar mis datos</button>
+        <textarea id="importBox" placeholder="Pega aquí los datos copiados desde el otro dispositivo" rows="4" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;font-family:'JetBrains Mono',monospace;margin-bottom:10px;background:var(--bg);color:var(--ink);"></textarea>
+        <button type="button" class="btn-primary" id="importBtn">Importar (se une con lo que ya tienes, no borra nada)</button>
+      </div>
+    </details>
   </main>
 </div>
 
@@ -885,6 +897,38 @@ document.getElementById("cancelWorkoutBtn").onclick = () => {
 document.getElementById("finishBtn").onclick = finishWorkout;
 document.querySelectorAll("#tabbar button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
 document.querySelectorAll("#progressSeg button").forEach(b => b.onclick = () => { progressMode = b.dataset.mode; renderProgress(); });
+
+document.getElementById("exportBtn").onclick = async () => {
+  const json = JSON.stringify(logs);
+  const box = document.getElementById("importBox");
+  try {
+    await navigator.clipboard.writeText(json);
+    showToast("Datos copiados — pégalos en el otro dispositivo");
+  } catch (e){
+    box.value = json;
+    box.focus();
+    box.select();
+    showToast("No se pudo copiar solo — selecciona el texto de abajo y cópialo");
+  }
+};
+
+document.getElementById("importBtn").onclick = () => {
+  const box = document.getElementById("importBox");
+  const raw = box.value.trim();
+  if (!raw){ showToast("Pega los datos primero"); return; }
+  let incoming;
+  try { incoming = JSON.parse(raw); }
+  catch (e){ showToast("Eso no parece un respaldo válido"); return; }
+  if (!Array.isArray(incoming)){ showToast("Eso no parece un respaldo válido"); return; }
+  incoming.forEach(l => { if (!l.id) l.id = entryId(); });
+  const before = logs.length;
+  logs = mergeLogsById(logs, incoming);
+  saveLogs();
+  box.value = "";
+  const added = logs.length - before;
+  showToast(added > 0 ? `Importado: ${added} series nuevas agregadas` : "Ya tenías todos esos datos");
+  if (currentTab === "progress") renderProgress();
+};
 
 function showToast(msg){
   const t = document.getElementById("toast");
