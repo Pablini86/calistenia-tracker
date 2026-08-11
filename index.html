@@ -210,6 +210,8 @@
   .seg{ display:flex; background:var(--border); border-radius:10px; padding:3px; margin-bottom:18px; }
   .seg button{ flex:1; background:none; border:none; padding:8px; border-radius:8px; font-size:13px; font-weight:700; color:var(--ink-soft); cursor:pointer; }
   .seg button.active{ background:var(--card); color:var(--ink); box-shadow:0 1px 2px rgba(20,21,26,.08); }
+  .unit-seg{ display:inline-flex; width:auto; margin-bottom:14px; }
+  .unit-seg button{ flex:none; padding:5px 14px; font-size:12px; text-transform:uppercase; letter-spacing:.03em; }
 
   select#exerciseSelect{
     width:100%; padding:12px 14px; border-radius:var(--radius-sm); border:1.5px solid var(--border);
@@ -233,6 +235,8 @@
   .session-card .meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
   .session-card .chev{ color:var(--ink-faint); transition:transform .2s ease; }
   .session-card.open .chev{ transform:rotate(90deg); }
+  .icon-btn-trash{ background:none; border:none; padding:6px; margin:-6px; cursor:pointer; color:var(--ink-faint); display:flex; align-items:center; justify-content:center; border-radius:8px; }
+  .icon-btn-trash:active{ color:var(--red); background:var(--bg); }
   .session-detail{ display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
   .session-card.open .session-detail{ display:block; }
   .session-detail .ex-line{ font-size:12.5px; margin-bottom:7px; line-height:1.5; }
@@ -242,6 +246,20 @@
   @media (max-width:360px){
     .set-table-head, .set-row{ grid-template-columns:16px 1fr 46px 46px 26px; gap:5px; }
   }
+
+  /* ---------- pantalla de contraseña ---------- */
+  .lock-overlay{
+    display:none; position:fixed; inset:0; z-index:100; background:var(--bg);
+    align-items:center; justify-content:center; padding:24px;
+  }
+  .lock-overlay.open{ display:flex; }
+  .lock-card{ width:100%; max-width:340px; }
+  .lock-input{
+    width:100%; padding:14px 16px; border:1.5px solid var(--border); border-radius:12px;
+    font-size:16px; background:var(--card); color:var(--ink);
+  }
+  .lock-input:focus{ border-color:var(--blue); }
+  .lock-error{ color:var(--red); font-size:13px; font-weight:600; margin-top:10px; min-height:16px; }
 </style>
 </head>
 <body>
@@ -252,6 +270,10 @@
     <h1 class="greet">Hola, Pablo</h1>
     <div class="sub-date" id="todayLine"></div>
     <div class="sync-status" id="syncStatus"></div>
+    <div class="seg unit-seg" id="unitToggle">
+      <button type="button" data-unit="kg">kg</button>
+      <button type="button" data-unit="lb">lb</button>
+    </div>
   </header>
   <main>
     <div class="stats-strip" id="statsStrip"></div>
@@ -350,6 +372,16 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="lock-overlay" id="lockOverlay">
+  <form class="lock-card" id="lockForm">
+    <div class="eyebrow">Calistenia + Pesas</div>
+    <h1 class="greet" style="margin-bottom:16px;">Escribe tu contraseña</h1>
+    <input type="password" id="lockInput" class="lock-input" placeholder="Contraseña" autocomplete="current-password" required>
+    <div class="lock-error" id="lockError"></div>
+    <button type="submit" class="btn-primary" style="margin-top:14px;">Entrar</button>
+  </form>
+</div>
+
 <script>
 const ORDER = ["push","pull","legs","upper","lower"];
 
@@ -409,6 +441,72 @@ function saveLogs(){
 }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 
+/* ---------------- UNIDAD DE PESO (kg/lb) ---------------- */
+// Todo se guarda siempre en kg (así ya funcionaba, y así se comparan bien
+// las gráficas de progreso sin importar qué unidad estés viendo hoy). El
+// switch solo cambia cómo se muestra/escribe el número, nunca lo guardado.
+const UNIT_KEY = "calistenia_unit";
+const KG_TO_LB = 2.20462;
+let weightUnit = localStorage.getItem(UNIT_KEY) === "lb" ? "lb" : "kg";
+
+function kgToUnit(kg){
+  if (kg === null || kg === undefined || kg === "") return kg;
+  const n = Number(kg);
+  if (Number.isNaN(n)) return kg;
+  const v = weightUnit === "lb" ? n * KG_TO_LB : n;
+  return Math.round(v * 10) / 10;
+}
+function unitToKg(val){
+  const n = Number(val);
+  if (Number.isNaN(n)) return null;
+  const kg = weightUnit === "lb" ? n / KG_TO_LB : n;
+  return Math.round(kg * 100) / 100;
+}
+
+function setWeightUnit(u){
+  if (u !== "kg" && u !== "lb") return;
+  weightUnit = u;
+  localStorage.setItem(UNIT_KEY, weightUnit);
+  document.querySelectorAll("#unitToggle button").forEach(b => b.classList.toggle("active", b.dataset.unit === weightUnit));
+  if (currentTab === "home") renderHome();
+  if (currentTab === "progress") renderProgress();
+}
+document.querySelectorAll("#unitToggle button").forEach(b => {
+  b.classList.toggle("active", b.dataset.unit === weightUnit);
+  b.onclick = () => setWeightUnit(b.dataset.unit);
+});
+
+/* ---------------- CONTRASEÑA ---------------- */
+// El candado en el cliente es solo para que un desconocido con el link no
+// vea la pantalla — la protección real está en el servidor (api/data.js
+// rechaza cualquier petición sin el header correcto). Por eso no hace falta
+// "validar" la contraseña aquí: si es incorrecta, el primer syncOnLoad()
+// recibirá un 401 y vuelve a mostrar el candado.
+const PASS_KEY = "calistenia_pass";
+function getStoredPassword(){ return localStorage.getItem(PASS_KEY) || ""; }
+function setStoredPassword(p){ localStorage.setItem(PASS_KEY, p); }
+function clearStoredPassword(){ localStorage.removeItem(PASS_KEY); }
+function authHeaders(){
+  const p = getStoredPassword();
+  return p ? { "x-app-password": p } : {};
+}
+function showLockScreen(message){
+  document.getElementById("lockError").textContent = message || "";
+  document.getElementById("lockOverlay").classList.add("open");
+  document.getElementById("lockInput").focus();
+}
+function hideLockScreen(){
+  document.getElementById("lockOverlay").classList.remove("open");
+}
+document.getElementById("lockForm").onsubmit = (e) => {
+  e.preventDefault();
+  const val = document.getElementById("lockInput").value.trim();
+  if (!val) return;
+  setStoredPassword(val);
+  hideLockScreen();
+  boot();
+};
+
 /* ---------------- SYNC (cel <-> compu) ---------------- */
 // Los entrenos solo se agregan, nunca se editan ni se borran (no hay UI para
 // eso), así que sincronizar es simplemente "unir" lo local con lo del
@@ -427,12 +525,22 @@ function ensureLogIds(){
   return changed;
 }
 
+// Un entreno borrado no se quita del arreglo: se marca con deleted:true (una
+// "lápida") para que la sincronización sepa que se borró en vez de creer que
+// el otro dispositivo simplemente todavía no lo tenía y volver a agregarlo.
+// Una vez borrado, se queda borrado — no hay forma de deshacerlo en la UI.
 function mergeLogsById(a, b){
   const map = new Map();
   a.forEach(l => map.set(l.id, l));
-  b.forEach(l => { if (!map.has(l.id)) map.set(l.id, l); });
+  b.forEach(l => {
+    const existing = map.get(l.id);
+    if (!existing) { map.set(l.id, l); return; }
+    if (l.deleted && !existing.deleted) map.set(l.id, l);
+  });
   return Array.from(map.values());
 }
+
+function activeLogs(){ return logs.filter(l => !l.deleted); }
 
 function setSyncStatus(state){
   const el = document.getElementById("syncStatus");
@@ -458,9 +566,15 @@ async function pushToServer(){
   try {
     const res = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ data: logs }),
     });
+    if (res.status === 401){
+      clearStoredPassword();
+      setSyncStatus("offline");
+      showLockScreen("Esa contraseña ya no es correcta — escríbela de nuevo.");
+      return;
+    }
     if (!res.ok) throw new Error("push failed: " + res.status);
     setSyncStatus("ok");
   } catch (e){
@@ -475,7 +589,13 @@ async function syncOnLoad(){
   setSyncStatus("syncing");
   let res;
   try {
-    res = await fetch(API_URL, { cache: "no-store" });
+    res = await fetch(API_URL, { cache: "no-store", headers: authHeaders() });
+    if (res.status === 401){
+      clearStoredPassword();
+      setSyncStatus("offline");
+      showLockScreen("Esa contraseña ya no es correcta — escríbela de nuevo.");
+      return;
+    }
     if (!res.ok) throw new Error("get failed: " + res.status);
   } catch (e){
     setSyncStatus("offline");
@@ -526,9 +646,10 @@ function mondayOf(date){
 }
 
 function suggestedDay(){
-  if (logs.length === 0) return "push";
-  const lastDate = logs.reduce((max, l) => l.date > max ? l.date : max, logs[0].date);
-  const lastEntries = logs.filter(l => l.date === lastDate);
+  const active = activeLogs();
+  if (active.length === 0) return "push";
+  const lastDate = active.reduce((max, l) => l.date > max ? l.date : max, active[0].date);
+  const lastEntries = active.filter(l => l.date === lastDate);
   const lastDay = lastEntries[lastEntries.length - 1].day;
   const idx = ORDER.indexOf(lastDay);
   if (idx === -1) return "push";
@@ -536,17 +657,17 @@ function suggestedDay(){
 }
 
 function lastDoneForDay(dayKey){
-  const rows = logs.filter(l => l.day === dayKey);
+  const rows = activeLogs().filter(l => l.day === dayKey);
   if (!rows.length) return null;
   return rows.reduce((max, l) => l.date > max ? l.date : max, rows[0].date);
 }
 
 function sessionsThisWeek(){
   const monday = mondayOf(new Date());
-  return new Set(logs.filter(l => l.date >= monday).map(l => l.date)).size;
+  return new Set(activeLogs().filter(l => l.date >= monday).map(l => l.date)).size;
 }
 function totalSessions(){
-  return new Set(logs.map(l => l.date + "_" + l.day)).size;
+  return new Set(activeLogs().map(l => l.date + "_" + l.day)).size;
 }
 
 /* ---------------- HOME ---------------- */
@@ -602,7 +723,7 @@ function renderHome(){
 /* ---------------- WORKOUT ---------------- */
 
 function previousMap(exerciseName){
-  const rows = logs.filter(l => l.exercise === exerciseName);
+  const rows = activeLogs().filter(l => l.exercise === exerciseName);
   if (!rows.length) return {};
   const maxDate = rows.reduce((m, l) => l.date > m ? l.date : m, rows[0].date);
   const map = {};
@@ -654,7 +775,7 @@ function renderWorkout(){
       </div>
       <div class="cue">${ex.cue}</div>
       <div class="set-table-head">
-        <span></span><span>Anterior</span><span>Kg</span><span>${unit === "s" ? "Seg" : "Reps"}</span><span></span>
+        <span></span><span>Anterior</span><span>${weightUnit}</span><span>${unit === "s" ? "Seg" : "Reps"}</span><span></span>
       </div>
       <div class="set-rows"></div>
     `;
@@ -662,15 +783,16 @@ function renderWorkout(){
     const rows = card.querySelector(".set-rows");
     for (let s = 1; s <= ex.sets; s++){
       const p = prev[s];
-      const prevText = p ? `${p.weight ?? "-"}kg × ${p.reps ?? "-"}` : "—";
+      const prevWeightDisplay = p && p.weight != null ? kgToUnit(p.weight) : "-";
+      const prevText = p ? `${prevWeightDisplay}${weightUnit} × ${p.reps ?? "-"}` : "—";
       const row = document.createElement("div");
       row.className = "set-row";
       row.innerHTML = `
         <span class="set-n">${s}</span>
         <span class="prev">${prevText}</span>
-        <input type="number" inputmode="decimal" placeholder="kg" data-ex="${exIdx}" data-set="${s}" data-field="weight" aria-label="${ex.name} serie ${s} kilos">
+        <input type="number" inputmode="decimal" placeholder="${weightUnit}" data-ex="${exIdx}" data-set="${s}" data-field="weight" aria-label="${ex.name} serie ${s} peso en ${weightUnit}">
         <input type="number" inputmode="numeric" placeholder="${unit}" data-ex="${exIdx}" data-set="${s}" data-field="reps" aria-label="${ex.name} serie ${s} ${unit === "s" ? "segundos" : "repeticiones"}">
-        <button type="button" class="check-btn" aria-pressed="false" aria-label="Marcar serie ${s} de ${ex.name} como hecha" data-prev-weight="${p ? p.weight ?? "" : ""}" data-prev-reps="${p ? p.reps ?? "" : ""}">
+        <button type="button" class="check-btn" aria-pressed="false" aria-label="Marcar serie ${s} de ${ex.name} como hecha" data-prev-weight="${p && p.weight != null ? p.weight : ""}" data-prev-reps="${p ? p.reps ?? "" : ""}">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5l3 3 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       `;
@@ -696,7 +818,7 @@ function toggleCheck(btn, row){
     const rInput = row.querySelector('input[data-field="reps"]');
     if (wInput.value === "" && rInput.value === ""){
       const pw = btn.dataset.prevWeight, pr = btn.dataset.prevReps;
-      if (pw !== "") wInput.value = pw;
+      if (pw !== "") wInput.value = kgToUnit(Number(pw));
       if (pr !== "") rInput.value = pr;
     }
   }
@@ -726,7 +848,7 @@ function finishWorkout(){
     if (inp.value === "") return;
     const key = inp.dataset.ex + "_" + inp.dataset.set;
     if (!bySet[key]) bySet[key] = { exIdx: +inp.dataset.ex, set: +inp.dataset.set };
-    bySet[key][inp.dataset.field] = +inp.value;
+    bySet[key][inp.dataset.field] = inp.dataset.field === "weight" ? unitToKg(inp.value) : +inp.value;
   });
   let count = 0;
   const dateForSession = todayStr();
@@ -796,17 +918,18 @@ function renderProgress(){
 function drawProgress(exName){
   const statsRow = document.getElementById("statsRow");
   if (!exName){ statsRow.innerHTML = ""; return; }
-  const rows = logs.filter(l => l.exercise === exName).sort((a,b) => a.date.localeCompare(b.date));
+  const rows = activeLogs().filter(l => l.exercise === exName).sort((a,b) => a.date.localeCompare(b.date));
   const byDate = {};
   rows.forEach(r => { (byDate[r.date] ||= []).push(r); });
   const dates = Object.keys(byDate).sort();
-  const maxWeights = dates.map(d => Math.max(...byDate[d].map(r => r.weight || 0)));
+  const maxWeightsKg = dates.map(d => Math.max(...byDate[d].map(r => r.weight || 0)));
+  const maxWeightsDisplay = maxWeightsKg.map(kgToUnit);
 
-  const bestWeight = maxWeights.length ? Math.max(...maxWeights) : 0;
+  const bestWeight = maxWeightsDisplay.length ? Math.max(...maxWeightsDisplay) : 0;
   const lastDate = dates.length ? dates[dates.length - 1] : null;
   statsRow.innerHTML = `
     <div class="stat"><div class="n mono">${dates.length}</div><div class="l">Entrenos</div></div>
-    <div class="stat"><div class="n mono">${bestWeight || "—"}</div><div class="l">Peso máx (kg)</div></div>
+    <div class="stat"><div class="n mono">${bestWeight || "—"}</div><div class="l">Peso máx (${weightUnit})</div></div>
     <div class="stat"><div class="n mono">${lastDate ? formatDateShort(lastDate) : "—"}</div><div class="l">Última vez</div></div>
   `;
 
@@ -820,7 +943,7 @@ function drawProgress(exName){
     chartInstance = new Chart(ctx, {
       type: "line",
       data: { labels: dates, datasets: [{
-        label: exName + " — peso máx (kg)", data: maxWeights,
+        label: exName + ` — peso máx (${weightUnit})`, data: maxWeightsDisplay,
         borderColor: "#0B6FF6", backgroundColor: "#0B6FF61A",
         pointBackgroundColor: "#0B6FF6", pointBorderColor: "#0B6FF6",
         tension: 0.25, fill: true,
@@ -840,7 +963,7 @@ function drawProgress(exName){
     return;
   }
   dates.slice().reverse().forEach(d => {
-    const sets = byDate[d].sort((a,b) => a.set - b.set).map(r => `${r.weight ?? "-"}kg×${r.reps ?? "-"}`).join("  ");
+    const sets = byDate[d].sort((a,b) => a.set - b.set).map(r => `${r.weight != null ? kgToUnit(r.weight) : "-"}${weightUnit}×${r.reps ?? "-"}`).join("  ");
     const tr = document.createElement("tr");
     tr.innerHTML = `<td>${formatDateShort(d)}</td><td class="sets">${sets}</td>`;
     tbody.appendChild(tr);
@@ -850,7 +973,7 @@ function drawProgress(exName){
 function renderHistoryList(){
   const wrap = document.getElementById("byHistory");
   const sessions = {};
-  logs.forEach(l => {
+  activeLogs().forEach(l => {
     const key = l.date + "_" + l.day;
     (sessions[key] ||= { date: l.date, day: l.day, rows: [] }).rows.push(l);
   });
@@ -870,7 +993,7 @@ function renderHistoryList(){
     const card = document.createElement("div");
     card.className = "session-card";
     const exLines = Object.entries(byEx).map(([name, sets]) => {
-      const setsTxt = sets.sort((a,b) => a.set - b.set).map(r => `${r.weight ?? "-"}kg×${r.reps ?? "-"}`).join("  ");
+      const setsTxt = sets.sort((a,b) => a.set - b.set).map(r => `${r.weight != null ? kgToUnit(r.weight) : "-"}${weightUnit}×${r.reps ?? "-"}`).join("  ");
       return `<div class="ex-line"><b>${name}</b><span>${setsTxt}</span></div>`;
     }).join("");
     card.innerHTML = `
@@ -879,13 +1002,30 @@ function renderHistoryList(){
           <div class="date">${formatDateLong(sess.date)}</div>
           <div class="meta">${dayLabel} · ${sess.rows.length} series registradas</div>
         </div>
-        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="display:flex;align-items:center;gap:2px;">
+          <button type="button" class="icon-btn-trash" aria-label="Eliminar este entrenamiento" title="Eliminar entrenamiento">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M6.3 4.5V3a1 1 0 011-1h1.4a1 1 0 011 1v1.5M4.5 4.5l.6 8.2a1 1 0 001 .9h3.8a1 1 0 001-.9l.6-8.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
       </div>
       <div class="session-detail">${exLines}</div>
     `;
+    card.querySelector(".icon-btn-trash").onclick = (e) => {
+      e.stopPropagation();
+      deleteSession(sess.date, sess.day);
+    };
     card.onclick = () => card.classList.toggle("open");
     wrap.appendChild(card);
   });
+}
+
+function deleteSession(date, day){
+  const dayLabel = DAYS[day]?.label ?? day;
+  if (!confirm(`¿Eliminar tu entrenamiento de ${dayLabel} del ${formatDateShort(date)}? Se borran todas las series registradas ese día.`)) return;
+  logs.forEach(l => { if (l.date === date && l.day === day) l.deleted = true; });
+  saveLogs();
+  renderHistoryList();
 }
 
 /* ---------------- WIRE UP ---------------- */
@@ -938,8 +1078,16 @@ function showToast(msg){
   t._timer = setTimeout(() => t.classList.remove("show"), 2200);
 }
 
-showTab("home");
-syncOnLoad();
+function boot(){
+  showTab("home");
+  syncOnLoad();
+}
+
+if (getStoredPassword()){
+  boot();
+} else {
+  showLockScreen();
+}
 </script>
 </body>
 </html>

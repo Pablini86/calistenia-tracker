@@ -4,14 +4,18 @@ App de una sola página (`index.html`) con la rutina completa de 5 días (Push /
 
 - Los registros se guardan primero en `localStorage` del dispositivo (la app funciona sin conexión), y se sincronizan solos entre tu celular y tu computadora vía `api/data.js` (Redis).
 - Cada ejercicio tiene un botón `?` con la técnica correcta (tocar para abrir/cerrar).
-- La pestaña **Progreso** muestra sesiones, peso máximo, última vez entrenado, una gráfica de evolución y el historial completo por ejercicio.
+- La pestaña **Progreso** muestra sesiones, peso máximo, última vez entrenado, una gráfica de evolución, el historial completo por ejercicio, y permite **borrar un entrenamiento** completo desde "Historial".
 - La app sugiere automáticamente el siguiente día según el último que registraste (rotación Push → Pull → Legs → Upper → Lower+Core).
+- Switch **kg/lb** en Inicio: convierte lo que ya tienes guardado al vuelo, sin duplicar ni perder datos (siempre se guarda en kg internamente).
+- La app pide una **contraseña** la primera vez que se abre en un dispositivo (se guarda ahí después, no hay que escribirla cada vez).
 
 ## Sincronización entre dispositivos
 
-Cada entreno guardado tiene un `id` único. Al abrir la app se baja lo del servidor y se **une** (no se sobrescribe) con lo que ya había en el dispositivo — como no hay forma de editar o borrar un entreno ya guardado, unir por id nunca pierde datos, sin importar qué dispositivo estaba sin conexión o en qué orden se sincronizaron. Si no hay conexión, la app sigue funcionando 100% con lo que ya tiene guardado localmente (indicador "Sin conexión — guardado solo aquí" bajo la fecha).
+Cada entreno guardado tiene un `id` único. Al abrir la app se baja lo del servidor y se **une** (no se sobrescribe) con lo que ya había en el dispositivo. Borrar un entrenamiento no lo quita del arreglo: lo marca como `deleted:true` (una "lápida"), así la sincronización sabe que se borró en vez de creerlo un entreno que el otro dispositivo simplemente no tenía y volver a agregarlo. Esto significa que la sincronización nunca pierde datos por accidente, sin importar qué dispositivo estaba sin conexión o en qué orden se sincronizaron. Si no hay conexión, la app sigue funcionando 100% con lo que ya tiene guardado localmente (indicador "Sin conexión — guardado solo aquí" bajo la fecha).
 
-Requiere estar desplegado en **Vercel** con una base de datos Redis conectada (variable de entorno `REDIS_URL`) — GitHub Pages no puede correr `api/data.js` porque es solo hosting estático.
+Requiere estar desplegado en **Vercel** con:
+- Una base de datos Redis conectada (variable de entorno `REDIS_URL`) — GitHub Pages no puede correr `api/data.js` porque es solo hosting estático.
+- La variable de entorno `APP_PASSWORD` con la contraseña que quieras usar. `api/data.js` rechaza (401) cualquier petición sin el header `x-app-password` correcto — la protección real vive en el servidor, no solo en la pantalla de candado del cliente.
 
 ## Deploy
 

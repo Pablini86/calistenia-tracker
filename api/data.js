@@ -5,6 +5,17 @@ const DATA_KEY = "calistenia:logs";
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
 
+  const expectedPassword = process.env.APP_PASSWORD;
+  if (!expectedPassword) {
+    res.status(500).json({ error: "Falta configurar la variable APP_PASSWORD en Vercel" });
+    return;
+  }
+  const givenPassword = req.headers["x-app-password"];
+  if (givenPassword !== expectedPassword) {
+    res.status(401).json({ error: "Contraseña incorrecta" });
+    return;
+  }
+
   const redis = getRedis();
   if (!redis) {
     res.status(500).json({ error: "Base de datos no configurada: falta la variable REDIS_URL en Vercel" });
