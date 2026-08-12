@@ -161,9 +161,16 @@
 
   /* ---------- warm-up card ---------- */
   .warmup-card{ margin:0 0 16px; }
-  .warmup-list{ margin:0; padding-left:18px; }
-  .warmup-list li{ margin-bottom:7px; }
-  .warmup-list li:last-child{ margin-bottom:0; }
+  .warmup-list{ margin:0; padding:0; list-style:none; }
+  .warmup-item{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .warmup-item:last-child{ margin-bottom:0; }
+  .warmup-item img{
+    flex:none; width:38px; height:38px; border-radius:8px; object-fit:contain;
+    background:#fff; border:1px solid var(--border); padding:2px;
+  }
+  .warmup-item .warmup-dot{
+    flex:none; width:6px; height:6px; margin:0 15px 0 1px; border-radius:50%; background:var(--ink-faint);
+  }
 
   /* ---------- "ya entrenaste hoy" banner ---------- */
   .done-today{
@@ -413,7 +420,7 @@ const DAYS = {
   push: { label: "Push", sub: "Pecho, hombro y tríceps", exercises: [
     { name: "Fondos en paralelas", muscle: "Pecho / tríceps / hombro", sets: 4, reps: "6-10", cue: "Brazos extendidos arriba, baja controlado hasta 90° de codo. Tronco inclinado adelante trabaja más pecho; recto, más tríceps.", img: "https://wger.de/media/exercise-images/194/34600351-8b0b-4cb0-8daa-583537be15b0.png.400x400_q85.png" },
     { name: "Press militar mancuernas", muscle: "Hombro", sets: 4, reps: "8-10", cue: "De pie o sentado, empuja arriba sin arquear la espalda baja. No bloquees los codos de golpe.", img: "https://wger.de/media/exercise-images/123/dumbbell-shoulder-press-large-1.png.400x400_q85.jpg" },
-    { name: "Pike push-up", muscle: "Hombro / tríceps", sets: 3, reps: "8-12", cue: "Cadera elevada formando una V invertida, baja la cabeza hacia el piso entre las manos. Progresión hacia parada de manos." },
+    { name: "Pike push-up", muscle: "Hombro / tríceps", sets: 3, reps: "8-12", cue: "Cadera elevada formando una V invertida, baja la cabeza hacia el piso entre las manos. Progresión hacia parada de manos.", img: "https://wger.de/media/exercise-images/454/447f3c17-405f-46e0-b138-65c2a8caaab0.png.400x400_q85.png" },
     { name: "Press banca mancuernas", muscle: "Pecho", sets: 3, reps: "10-12", cue: "Escápulas retraídas contra el banco, baja hasta que el codo quede a la altura del pecho, sin trabar codos al subir.", img: "https://wger.de/media/exercise-images/192/Bench-press-1.png.400x400_q85.png" },
     { name: "Extensión tríceps", muscle: "Tríceps", sets: 3, reps: "12-15", cue: "Codo fijo apuntando al techo o al frente; solo se mueve el antebrazo.", img: "https://wger.de/media/exercise-images/1519/fab7f641-27d4-40b5-8edd-1a0a137bfd94.gif" },
     { name: "Plancha", muscle: "Core", sets: 3, unit: "s", reps: "30-45", cue: "Cuerpo en línea recta de cabeza a talón, abdomen y glúteo apretados. No dejes caer la cadera.", img: "https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png.400x400_q85.png" },
@@ -424,7 +431,7 @@ const DAYS = {
     { name: "Remo invertido anillas", muscle: "Espalda", sets: 3, reps: "10-12", cue: "Cuerpo recto como plancha, tira el pecho hacia las manos. Ajusta la dificultad con el ángulo del cuerpo.", img: "https://wger.de/media/exercise-images/1198/864906ac-4ac7-4e52-a886-c6bb97950a9f.jpg.400x400_q85.jpg" },
     { name: "Curl bíceps", muscle: "Bíceps", sets: 3, reps: "10-12", cue: "Codo pegado al torso, sube sin balancear el cuerpo, controla la bajada 2-3s.", img: "https://wger.de/media/exercise-images/81/Biceps-curl-1.png.400x400_q85.png" },
     { name: "Face pull", muscle: "Hombro posterior", sets: 3, reps: "12-15", cue: "Tira hacia la cara con codos altos, aprieta omóplatos al final del movimiento.", img: "https://wger.de/media/exercise-images/1639/8927346e-f5ca-4795-bdf1-5ac9309401e7.webp.400x400_q85.jpg" },
-    { name: "Dead hang", muscle: "Agarre", sets: 3, unit: "s", reps: "20-30", cue: "Cuelga con brazos extendidos, hombros activos (no 100% relajados), aguanta el tiempo indicado." },
+    { name: "Dead hang", muscle: "Agarre", sets: 3, unit: "s", reps: "20-30", cue: "Cuelga con brazos extendidos, hombros activos (no 100% relajados), aguanta el tiempo indicado.", img: "https://wger.de/media/exercise-images/804/6f4b8bd9-fa05-49de-870b-1f79b595ce89.png.400x400_q85.png" },
   ]},
   legs: { label: "Legs", sub: "Piernas", exercises: [
     { name: "Sentadilla barra/goblet", muscle: "Cuádriceps / glúteo", sets: 4, reps: "8-10", cue: "Pies al ancho de hombros, baja hasta pasar paralelo si tu movilidad lo permite, rodillas siguen la dirección de los pies.", img: "https://wger.de/media/exercise-images/203/1c052351-2af0-4227-aeb0-244008e4b0a8.jpeg.400x400_q85.jpg" },
@@ -432,15 +439,15 @@ const DAYS = {
     { name: "Peso muerto rumano", muscle: "Isquios / glúteo", sets: 3, reps: "10-12", cue: "Piernas semi-flexionadas, cadera atrás (bisagra de cadera), espalda recta, baja hasta sentir estiramiento en isquios.", img: "https://wger.de/media/exercise-images/1652/0306c8c0-70cc-45d4-92de-6fa72ceaa834.webp.400x400_q85.jpg" },
     { name: "Sentadilla búlgara", muscle: "Cuádriceps unilateral", sets: 3, reps: "10 c/pierna", cue: "Pie trasero elevado en un banco, baja recto hacia abajo con la pierna de adelante.", img: "https://wger.de/media/exercise-images/1706/0c5243cc-2539-4005-aee0-d3a8c5d3a32c.jfif.400x400_q85.jpg" },
     { name: "Elevación de gemelos", muscle: "Pantorrilla", sets: 4, reps: "15-20", cue: "Sube en punta de pies lo más alto posible, baja controlado más allá de la horizontal para estirar.", img: "https://wger.de/media/exercise-images/622/9a429bd0-afd3-4ad0-8043-e9beec901c81.jpeg.400x400_q85.jpg" },
-    { name: "Rodilla al pecho colgado", muscle: "Core inferior", sets: 3, reps: "12-15", cue: "Colgado de la barra, sube las rodillas al pecho sin balancear el cuerpo, controla la bajada." },
+    { name: "Rodilla al pecho colgado", muscle: "Core inferior", sets: 3, reps: "12-15", cue: "Colgado de la barra, sube las rodillas al pecho sin balancear el cuerpo, controla la bajada.", img: "https://wger.de/media/exercise-images/979/27097a3a-5749-428d-b94c-6082afe390f6.png.400x400_q85.png" },
   ]},
   upper: { label: "Upper", sub: "Empuje y tirón combinados", exercises: [
     { name: "Dominadas explosivas", muscle: "Espalda / potencia", sets: 4, reps: "5-6", cue: "Tirón rápido y potente buscando llevar el pecho alto (prep muscle-up), controla siempre la bajada.", img: "https://wger.de/media/exercise-images/475/b0554016-16fd-4dbe-be47-a2a17d16ae0e.jpg.400x400_q85.jpg" },
-    { name: "Pike push-up elevado", muscle: "Hombro (prep HSPU)", sets: 4, reps: "6-10", cue: "Igual que el pike push-up pero con los pies elevados en un banco: más carga sobre el hombro." },
+    { name: "Pike push-up elevado", muscle: "Hombro (prep HSPU)", sets: 4, reps: "6-10", cue: "Igual que el pike push-up pero con los pies elevados en un banco: más carga sobre el hombro.", img: "https://wger.de/media/exercise-images/454/447f3c17-405f-46e0-b138-65c2a8caaab0.png.400x400_q85.png" },
     { name: "Remo invertido anillas", muscle: "Espalda", sets: 3, reps: "10-12", cue: "Cuerpo recto como plancha, tira el pecho hacia las manos. Ajusta la dificultad con el ángulo del cuerpo.", img: "https://wger.de/media/exercise-images/1198/864906ac-4ac7-4e52-a886-c6bb97950a9f.jpg.400x400_q85.jpg" },
     { name: "Fondos lastrados", muscle: "Pecho / tríceps", sets: 3, reps: "8-10", cue: "Igual que los fondos normales pero con lastre (cinturón o mochila). Mismo control de rango.", img: "https://wger.de/media/exercise-images/194/34600351-8b0b-4cb0-8daa-583537be15b0.png.400x400_q85.png" },
     { name: "L-sit", muscle: "Core / skill", sets: 3, unit: "s", reps: "10-20", cue: "Sentado con manos apoyadas, piernas extendidas al frente elevadas del piso, core y cadera apretados." },
-    { name: "Dead hang", muscle: "Agarre", sets: 3, unit: "s", reps: "20-30", cue: "Cuelga con brazos extendidos, hombros activos (no 100% relajados), aguanta el tiempo indicado." },
+    { name: "Dead hang", muscle: "Agarre", sets: 3, unit: "s", reps: "20-30", cue: "Cuelga con brazos extendidos, hombros activos (no 100% relajados), aguanta el tiempo indicado.", img: "https://wger.de/media/exercise-images/804/6f4b8bd9-fa05-49de-870b-1f79b595ce89.png.400x400_q85.png" },
   ]},
   lower: { label: "Lower+Core", sub: "Piernas y core", exercises: [
     { name: "Peso muerto convencional", muscle: "Cadena posterior", sets: 4, reps: "6-8", cue: "Barra pegada a las piernas, cadera y hombros suben a la misma velocidad, espalda neutra todo el recorrido.", img: "https://wger.de/media/exercise-images/184/1709c405-620a-4d07-9658-fade2b66a2df.jpeg.400x400_q85.jpg" },
@@ -453,41 +460,52 @@ const DAYS = {
 };
 
 // Calentamiento específico por día (5-8 min antes de cada sesión).
+// Algunos pasos no traen foto porque no hay ninguna real disponible para
+// ese movimiento exacto de movilidad (ej. leg swings, puente de glúteo).
+const IMG_EXT_ROT = "https://wger.de/media/exercise-images/1835/ca4a0b7e-9fdd-4173-843a-f0392824abe1.jpg.400x400_q85.jpg";
+const IMG_DEAD_HANG = "https://wger.de/media/exercise-images/804/6f4b8bd9-fa05-49de-870b-1f79b595ce89.png.400x400_q85.png";
+const IMG_FACE_PULL = "https://wger.de/media/exercise-images/1639/8927346e-f5ca-4795-bdf1-5ac9309401e7.webp.400x400_q85.jpg";
+const IMG_INV_ROW = "https://wger.de/media/exercise-images/1198/864906ac-4ac7-4e52-a886-c6bb97950a9f.jpg.400x400_q85.jpg";
+const IMG_SQUAT_BW = "https://wger.de/media/exercise-images/1801/60043328-1cfb-4289-9865-aaf64d5aaa28.jpg.400x400_q85.jpg";
+const IMG_LUNGE = "https://wger.de/media/exercise-images/984/5c7ffe68-e7b2-47f3-a22a-f9cc28640432.png.400x400_q85.jpg";
+const IMG_PLANK = "https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png.400x400_q85.png";
+const IMG_HIP_HINGE = "https://wger.de/media/exercise-images/1392/a02c9c7d-f42d-43e0-9946-1b99b014daee.png.400x400_q85.png";
+
 const WARMUPS = {
   push: [
-    "5 min de cardio suave (cuerda, remo o bici) para subir la temperatura.",
-    "Círculos de hombro: 15 hacia adelante, 15 hacia atrás.",
-    "Rotaciones externas con banda o mancuerna ligera: 2×12.",
-    "Flexiones de rodillas suaves (1-2 series, sin llegar al fallo).",
-    "Movilidad de muñeca: círculos y flexión/extensión, 30s por lado.",
+    { text: "5 min de cardio suave (cuerda, remo o bici) para subir la temperatura." },
+    { text: "Círculos de hombro: 15 hacia adelante, 15 hacia atrás." },
+    { text: "Rotaciones externas con banda o mancuerna ligera: 2×12.", img: IMG_EXT_ROT },
+    { text: "Flexiones de rodillas suaves (1-2 series, sin llegar al fallo)." },
+    { text: "Movilidad de muñeca: círculos y flexión/extensión, 30s por lado." },
   ],
   pull: [
-    "5 min de cardio suave para activar.",
-    "Dead hang suave: 2×15-20s (activa hombros y agarre sin fatigar).",
-    "Face pulls con banda ligera: 2×15.",
-    "Círculos de brazo hacia atrás, 15 por dirección.",
-    "Remo invertido con ángulo fácil: 1-2 series ligeras.",
+    { text: "5 min de cardio suave para activar." },
+    { text: "Dead hang suave: 2×15-20s (activa hombros y agarre sin fatigar).", img: IMG_DEAD_HANG },
+    { text: "Face pulls con banda ligera: 2×15.", img: IMG_FACE_PULL },
+    { text: "Círculos de brazo hacia atrás, 15 por dirección." },
+    { text: "Remo invertido con ángulo fácil: 1-2 series ligeras.", img: IMG_INV_ROW },
   ],
   legs: [
-    "5 min de cardio suave (bici, saltos suaves o trote).",
-    "Sentadilla con peso corporal: 2×12-15.",
-    "Zancadas caminando sin peso: 10 pasos.",
-    "Círculos de cadera y balanceo de pierna (leg swings): 10 por lado.",
-    "Puente de glúteo: 2×12.",
+    { text: "5 min de cardio suave (bici, saltos suaves o trote)." },
+    { text: "Sentadilla con peso corporal: 2×12-15.", img: IMG_SQUAT_BW },
+    { text: "Zancadas caminando sin peso: 10 pasos.", img: IMG_LUNGE },
+    { text: "Círculos de cadera y balanceo de pierna (leg swings): 10 por lado." },
+    { text: "Puente de glúteo: 2×12." },
   ],
   upper: [
-    "5 min de cardio suave.",
-    "Dead hang suave: 2×15-20s.",
-    "Círculos de hombro + rotaciones externas con banda: 2×12.",
-    "Remo invertido fácil: 1-2 series ligeras.",
-    "Movilidad de muñeca y plancha corta de activación: 15-20s.",
+    { text: "5 min de cardio suave." },
+    { text: "Dead hang suave: 2×15-20s.", img: IMG_DEAD_HANG },
+    { text: "Círculos de hombro + rotaciones externas con banda: 2×12.", img: IMG_EXT_ROT },
+    { text: "Remo invertido fácil: 1-2 series ligeras.", img: IMG_INV_ROW },
+    { text: "Movilidad de muñeca y plancha corta de activación: 15-20s.", img: IMG_PLANK },
   ],
   lower: [
-    "5 min de cardio suave.",
-    "Puente de glúteo: 2×15.",
-    "Bisagra de cadera con solo el cuerpo (prep. peso muerto): 2×12.",
-    "Sentadilla con peso corporal: 2×12-15.",
-    "Círculos de cadera y leg swings: 10 por lado.",
+    { text: "5 min de cardio suave." },
+    { text: "Puente de glúteo: 2×15." },
+    { text: "Bisagra de cadera con solo el cuerpo (prep. peso muerto): 2×12.", img: IMG_HIP_HINGE },
+    { text: "Sentadilla con peso corporal: 2×12-15.", img: IMG_SQUAT_BW },
+    { text: "Círculos de cadera y leg swings: 10 por lado." },
   ],
 };
 
@@ -835,7 +853,12 @@ function renderWorkout(){
 
   document.getElementById("warmupCard").open = false;
   document.getElementById("warmupList").innerHTML = (WARMUPS[activeWorkout] || [])
-    .map(step => `<li>${step}</li>`).join("");
+    .map(step => `
+      <li class="warmup-item">
+        ${step.img ? `<img src="${step.img}" alt="" loading="lazy">` : `<span class="warmup-dot"></span>`}
+        <span>${step.text}</span>
+      </li>
+    `).join("");
 
   const list = document.getElementById("exerciseList");
   list.innerHTML = "";
