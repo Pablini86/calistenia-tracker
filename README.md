@@ -3,7 +3,9 @@
 App de una sola página (`index.html`) con la rutina completa de 5 días (Push / Pull / Legs / Upper / Lower+Core) y un registro de peso y repeticiones por ejercicio.
 
 - Los registros se guardan primero en `localStorage` del dispositivo (la app funciona sin conexión), y se sincronizan solos entre tu celular y tu computadora vía `api/data.js` (Redis).
-- Cada ejercicio tiene un botón `?` con la técnica correcta (tocar para abrir/cerrar).
+- Cada ejercicio tiene un botón `?` con la técnica correcta, las repeticiones recomendadas, y una foto de ejemplo del movimiento (tocar para abrir/cerrar). Las fotos vienen de [wger.de](https://wger.de) (base de datos de ejercicios de código abierto, licencia CC-BY-SA); unos pocos ejercicios (Pike push-up, Dead hang, L-sit, Rodilla al pecho colgado) se quedaron sin foto porque no había ninguna real disponible para ese movimiento exacto.
+- Cada día trae un bloque de **calentamiento específico** (5 min) arriba de los ejercicios, plegado por default — toca para abrir.
+- Si ya entrenaste hoy, Inicio te lo dice ("Ya entrenaste hoy: X") y cambia la sugerencia a "para tu próxima sesión" en vez de empujarte a repetir el mismo día.
 - La pestaña **Progreso** muestra sesiones, peso máximo, última vez entrenado, una gráfica de evolución, el historial completo por ejercicio, y permite **borrar un entrenamiento** completo desde "Historial".
 - La app sugiere automáticamente el siguiente día según el último que registraste (rotación Push → Pull → Legs → Upper → Lower+Core).
 - Switch **kg/lb** en Inicio: convierte lo que ya tienes guardado al vuelo, sin duplicar ni perder datos (siempre se guarda en kg internamente).

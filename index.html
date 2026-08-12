@@ -147,6 +147,7 @@
   .card-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:10px; }
   .card-head h3{ margin:0; font-size:15.5px; font-weight:700; }
   .muscle{ color:var(--blue-dark); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; margin-top:2px; }
+  .reco{ color:var(--ink-faint); font-size:11.5px; font-weight:600; margin-top:3px; }
 
   .help-q{
     flex:none; width:22px; height:22px; border-radius:50%; border:1.5px solid var(--border);
@@ -156,6 +157,21 @@
   .help-q[aria-expanded="true"]{ background:var(--ink); color:#fff; border-color:var(--ink); }
   .cue{ display:none; font-size:12.5px; color:var(--ink-soft); line-height:1.5; background:var(--bg); border-radius:8px; padding:9px 11px; margin:-2px 0 10px; }
   .cue.open{ display:block; }
+  .cue-img{ display:block; width:100%; max-width:220px; border-radius:8px; margin:0 auto 9px; background:#fff; }
+
+  /* ---------- warm-up card ---------- */
+  .warmup-card{ margin:0 0 16px; }
+  .warmup-list{ margin:0; padding-left:18px; }
+  .warmup-list li{ margin-bottom:7px; }
+  .warmup-list li:last-child{ margin-bottom:0; }
+
+  /* ---------- "ya entrenaste hoy" banner ---------- */
+  .done-today{
+    display:flex; align-items:center; gap:10px; background:var(--green-soft); border:1px solid #B9E7D0;
+    border-radius:var(--radius-md); padding:12px 14px; margin-bottom:16px; font-size:13.5px; color:var(--ink);
+  }
+  .done-today .dot{ flex:none; width:8px; height:8px; border-radius:50%; background:var(--green); }
+  .done-today b{ font-weight:700; }
 
   .set-table-head, .set-row{
     display:grid; grid-template-columns:20px 1fr 52px 52px 30px; gap:7px; align-items:center;
@@ -312,6 +328,14 @@
     </div>
   </div>
   <main>
+    <details class="info warmup-card" id="warmupCard">
+      <summary>Calentamiento (5 min)
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="info-body">
+        <ul class="warmup-list" id="warmupList"></ul>
+      </div>
+    </details>
     <div id="exerciseList"></div>
   </main>
   <div class="workout-save-bar">
@@ -387,45 +411,84 @@ const ORDER = ["push","pull","legs","upper","lower"];
 
 const DAYS = {
   push: { label: "Push", sub: "Pecho, hombro y tríceps", exercises: [
-    { name: "Fondos en paralelas", muscle: "Pecho / tríceps / hombro", sets: 4, cue: "Brazos extendidos arriba, baja controlado hasta 90° de codo. Tronco inclinado adelante trabaja más pecho; recto, más tríceps." },
-    { name: "Press militar mancuernas", muscle: "Hombro", sets: 4, cue: "De pie o sentado, empuja arriba sin arquear la espalda baja. No bloquees los codos de golpe." },
-    { name: "Pike push-up", muscle: "Hombro / tríceps", sets: 3, cue: "Cadera elevada formando una V invertida, baja la cabeza hacia el piso entre las manos. Progresión hacia parada de manos." },
-    { name: "Press banca mancuernas", muscle: "Pecho", sets: 3, cue: "Escápulas retraídas contra el banco, baja hasta que el codo quede a la altura del pecho, sin trabar codos al subir." },
-    { name: "Extensión tríceps", muscle: "Tríceps", sets: 3, cue: "Codo fijo apuntando al techo o al frente; solo se mueve el antebrazo." },
-    { name: "Plancha", muscle: "Core", sets: 3, unit: "s", cue: "Cuerpo en línea recta de cabeza a talón, abdomen y glúteo apretados. No dejes caer la cadera." },
+    { name: "Fondos en paralelas", muscle: "Pecho / tríceps / hombro", sets: 4, reps: "6-10", cue: "Brazos extendidos arriba, baja controlado hasta 90° de codo. Tronco inclinado adelante trabaja más pecho; recto, más tríceps.", img: "https://wger.de/media/exercise-images/194/34600351-8b0b-4cb0-8daa-583537be15b0.png.400x400_q85.png" },
+    { name: "Press militar mancuernas", muscle: "Hombro", sets: 4, reps: "8-10", cue: "De pie o sentado, empuja arriba sin arquear la espalda baja. No bloquees los codos de golpe.", img: "https://wger.de/media/exercise-images/123/dumbbell-shoulder-press-large-1.png.400x400_q85.jpg" },
+    { name: "Pike push-up", muscle: "Hombro / tríceps", sets: 3, reps: "8-12", cue: "Cadera elevada formando una V invertida, baja la cabeza hacia el piso entre las manos. Progresión hacia parada de manos." },
+    { name: "Press banca mancuernas", muscle: "Pecho", sets: 3, reps: "10-12", cue: "Escápulas retraídas contra el banco, baja hasta que el codo quede a la altura del pecho, sin trabar codos al subir.", img: "https://wger.de/media/exercise-images/192/Bench-press-1.png.400x400_q85.png" },
+    { name: "Extensión tríceps", muscle: "Tríceps", sets: 3, reps: "12-15", cue: "Codo fijo apuntando al techo o al frente; solo se mueve el antebrazo.", img: "https://wger.de/media/exercise-images/1519/fab7f641-27d4-40b5-8edd-1a0a137bfd94.gif" },
+    { name: "Plancha", muscle: "Core", sets: 3, unit: "s", reps: "30-45", cue: "Cuerpo en línea recta de cabeza a talón, abdomen y glúteo apretados. No dejes caer la cadera.", img: "https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png.400x400_q85.png" },
   ]},
   pull: { label: "Pull", sub: "Espalda y bíceps", exercises: [
-    { name: "Dominadas", muscle: "Espalda / bíceps", sets: 4, cue: "Agarre prono, activa escápulas antes de tirar, sube hasta pasar la barbilla, baja controlado. Usa negativas o banda si aún no tienes reps limpias." },
-    { name: "Remo barra/mancuerna", muscle: "Espalda", sets: 4, cue: "Torso inclinado ~45°, tira hacia el abdomen apretando escápulas, espalda neutra (no redondees)." },
-    { name: "Remo invertido anillas", muscle: "Espalda", sets: 3, cue: "Cuerpo recto como plancha, tira el pecho hacia las manos. Ajusta la dificultad con el ángulo del cuerpo." },
-    { name: "Curl bíceps", muscle: "Bíceps", sets: 3, cue: "Codo pegado al torso, sube sin balancear el cuerpo, controla la bajada 2-3s." },
-    { name: "Face pull", muscle: "Hombro posterior", sets: 3, cue: "Tira hacia la cara con codos altos, aprieta omóplatos al final del movimiento." },
-    { name: "Dead hang", muscle: "Agarre", sets: 3, unit: "s", cue: "Cuelga con brazos extendidos, hombros activos (no 100% relajados), aguanta el tiempo indicado." },
+    { name: "Dominadas", muscle: "Espalda / bíceps", sets: 4, reps: "5-8", cue: "Agarre prono, activa escápulas antes de tirar, sube hasta pasar la barbilla, baja controlado. Usa negativas o banda si aún no tienes reps limpias.", img: "https://wger.de/media/exercise-images/475/b0554016-16fd-4dbe-be47-a2a17d16ae0e.jpg.400x400_q85.jpg" },
+    { name: "Remo barra/mancuerna", muscle: "Espalda", sets: 4, reps: "8-10", cue: "Torso inclinado ~45°, tira hacia el abdomen apretando escápulas, espalda neutra (no redondees).", img: "https://wger.de/media/exercise-images/109/Barbell-rear-delt-row-1.png.400x400_q85.jpg" },
+    { name: "Remo invertido anillas", muscle: "Espalda", sets: 3, reps: "10-12", cue: "Cuerpo recto como plancha, tira el pecho hacia las manos. Ajusta la dificultad con el ángulo del cuerpo.", img: "https://wger.de/media/exercise-images/1198/864906ac-4ac7-4e52-a886-c6bb97950a9f.jpg.400x400_q85.jpg" },
+    { name: "Curl bíceps", muscle: "Bíceps", sets: 3, reps: "10-12", cue: "Codo pegado al torso, sube sin balancear el cuerpo, controla la bajada 2-3s.", img: "https://wger.de/media/exercise-images/81/Biceps-curl-1.png.400x400_q85.png" },
+    { name: "Face pull", muscle: "Hombro posterior", sets: 3, reps: "12-15", cue: "Tira hacia la cara con codos altos, aprieta omóplatos al final del movimiento.", img: "https://wger.de/media/exercise-images/1639/8927346e-f5ca-4795-bdf1-5ac9309401e7.webp.400x400_q85.jpg" },
+    { name: "Dead hang", muscle: "Agarre", sets: 3, unit: "s", reps: "20-30", cue: "Cuelga con brazos extendidos, hombros activos (no 100% relajados), aguanta el tiempo indicado." },
   ]},
   legs: { label: "Legs", sub: "Piernas", exercises: [
-    { name: "Sentadilla barra/goblet", muscle: "Cuádriceps / glúteo", sets: 4, cue: "Pies al ancho de hombros, baja hasta pasar paralelo si tu movilidad lo permite, rodillas siguen la dirección de los pies." },
-    { name: "Zancadas mancuernas", muscle: "Cuádriceps / glúteo", sets: 3, cue: "Paso largo, baja la rodilla trasera casi al piso; la rodilla delantera no rebasa mucho la punta del pie." },
-    { name: "Peso muerto rumano", muscle: "Isquios / glúteo", sets: 3, cue: "Piernas semi-flexionadas, cadera atrás (bisagra de cadera), espalda recta, baja hasta sentir estiramiento en isquios." },
-    { name: "Sentadilla búlgara", muscle: "Cuádriceps unilateral", sets: 3, cue: "Pie trasero elevado en un banco, baja recto hacia abajo con la pierna de adelante." },
-    { name: "Elevación de gemelos", muscle: "Pantorrilla", sets: 4, cue: "Sube en punta de pies lo más alto posible, baja controlado más allá de la horizontal para estirar." },
-    { name: "Rodilla al pecho colgado", muscle: "Core inferior", sets: 3, cue: "Colgado de la barra, sube las rodillas al pecho sin balancear el cuerpo, controla la bajada." },
+    { name: "Sentadilla barra/goblet", muscle: "Cuádriceps / glúteo", sets: 4, reps: "8-10", cue: "Pies al ancho de hombros, baja hasta pasar paralelo si tu movilidad lo permite, rodillas siguen la dirección de los pies.", img: "https://wger.de/media/exercise-images/203/1c052351-2af0-4227-aeb0-244008e4b0a8.jpeg.400x400_q85.jpg" },
+    { name: "Zancadas mancuernas", muscle: "Cuádriceps / glúteo", sets: 3, reps: "10 c/pierna", cue: "Paso largo, baja la rodilla trasera casi al piso; la rodilla delantera no rebasa mucho la punta del pie.", img: "https://wger.de/media/exercise-images/984/5c7ffe68-e7b2-47f3-a22a-f9cc28640432.png.400x400_q85.jpg" },
+    { name: "Peso muerto rumano", muscle: "Isquios / glúteo", sets: 3, reps: "10-12", cue: "Piernas semi-flexionadas, cadera atrás (bisagra de cadera), espalda recta, baja hasta sentir estiramiento en isquios.", img: "https://wger.de/media/exercise-images/1652/0306c8c0-70cc-45d4-92de-6fa72ceaa834.webp.400x400_q85.jpg" },
+    { name: "Sentadilla búlgara", muscle: "Cuádriceps unilateral", sets: 3, reps: "10 c/pierna", cue: "Pie trasero elevado en un banco, baja recto hacia abajo con la pierna de adelante.", img: "https://wger.de/media/exercise-images/1706/0c5243cc-2539-4005-aee0-d3a8c5d3a32c.jfif.400x400_q85.jpg" },
+    { name: "Elevación de gemelos", muscle: "Pantorrilla", sets: 4, reps: "15-20", cue: "Sube en punta de pies lo más alto posible, baja controlado más allá de la horizontal para estirar.", img: "https://wger.de/media/exercise-images/622/9a429bd0-afd3-4ad0-8043-e9beec901c81.jpeg.400x400_q85.jpg" },
+    { name: "Rodilla al pecho colgado", muscle: "Core inferior", sets: 3, reps: "12-15", cue: "Colgado de la barra, sube las rodillas al pecho sin balancear el cuerpo, controla la bajada." },
   ]},
   upper: { label: "Upper", sub: "Empuje y tirón combinados", exercises: [
-    { name: "Dominadas explosivas", muscle: "Espalda / potencia", sets: 4, cue: "Tirón rápido y potente buscando llevar el pecho alto (prep muscle-up), controla siempre la bajada." },
-    { name: "Pike push-up elevado", muscle: "Hombro (prep HSPU)", sets: 4, cue: "Igual que el pike push-up pero con los pies elevados en un banco: más carga sobre el hombro." },
-    { name: "Remo invertido anillas", muscle: "Espalda", sets: 3, cue: "Cuerpo recto como plancha, tira el pecho hacia las manos. Ajusta la dificultad con el ángulo del cuerpo." },
-    { name: "Fondos lastrados", muscle: "Pecho / tríceps", sets: 3, cue: "Igual que los fondos normales pero con lastre (cinturón o mochila). Mismo control de rango." },
-    { name: "L-sit", muscle: "Core / skill", sets: 3, unit: "s", cue: "Sentado con manos apoyadas, piernas extendidas al frente elevadas del piso, core y cadera apretados." },
-    { name: "Dead hang", muscle: "Agarre", sets: 3, unit: "s", cue: "Cuelga con brazos extendidos, hombros activos (no 100% relajados), aguanta el tiempo indicado." },
+    { name: "Dominadas explosivas", muscle: "Espalda / potencia", sets: 4, reps: "5-6", cue: "Tirón rápido y potente buscando llevar el pecho alto (prep muscle-up), controla siempre la bajada.", img: "https://wger.de/media/exercise-images/475/b0554016-16fd-4dbe-be47-a2a17d16ae0e.jpg.400x400_q85.jpg" },
+    { name: "Pike push-up elevado", muscle: "Hombro (prep HSPU)", sets: 4, reps: "6-10", cue: "Igual que el pike push-up pero con los pies elevados en un banco: más carga sobre el hombro." },
+    { name: "Remo invertido anillas", muscle: "Espalda", sets: 3, reps: "10-12", cue: "Cuerpo recto como plancha, tira el pecho hacia las manos. Ajusta la dificultad con el ángulo del cuerpo.", img: "https://wger.de/media/exercise-images/1198/864906ac-4ac7-4e52-a886-c6bb97950a9f.jpg.400x400_q85.jpg" },
+    { name: "Fondos lastrados", muscle: "Pecho / tríceps", sets: 3, reps: "8-10", cue: "Igual que los fondos normales pero con lastre (cinturón o mochila). Mismo control de rango.", img: "https://wger.de/media/exercise-images/194/34600351-8b0b-4cb0-8daa-583537be15b0.png.400x400_q85.png" },
+    { name: "L-sit", muscle: "Core / skill", sets: 3, unit: "s", reps: "10-20", cue: "Sentado con manos apoyadas, piernas extendidas al frente elevadas del piso, core y cadera apretados." },
+    { name: "Dead hang", muscle: "Agarre", sets: 3, unit: "s", reps: "20-30", cue: "Cuelga con brazos extendidos, hombros activos (no 100% relajados), aguanta el tiempo indicado." },
   ]},
   lower: { label: "Lower+Core", sub: "Piernas y core", exercises: [
-    { name: "Peso muerto convencional", muscle: "Cadena posterior", sets: 4, cue: "Barra pegada a las piernas, cadera y hombros suben a la misma velocidad, espalda neutra todo el recorrido." },
-    { name: "Prensa/sentadilla frontal", muscle: "Cuádriceps", sets: 3, cue: "Controla el descenso. No dejes que la espalda baja se despegue del respaldo (prensa) o se redondee (frontal)." },
-    { name: "Curl femoral", muscle: "Isquios", sets: 3, cue: "Flexiona la rodilla llevando el talón al glúteo, controla la vuelta." },
-    { name: "Zancadas caminando", muscle: "Cuádriceps / glúteo", sets: 3, cue: "Paso largo hacia adelante, alterna piernas caminando; la rodilla delantera no rebasa mucho la punta del pie." },
-    { name: "Elevación gemelos sentado", muscle: "Pantorrilla", sets: 4, cue: "Sube en punta de pies lo más alto posible, baja controlado más allá de la horizontal para estirar." },
-    { name: "Plancha con elevación pierna", muscle: "Core", sets: 3, unit: "s", cue: "Plancha estándar; eleva una pierna manteniendo la cadera nivelada, alterna sin perder la línea del cuerpo." },
+    { name: "Peso muerto convencional", muscle: "Cadena posterior", sets: 4, reps: "6-8", cue: "Barra pegada a las piernas, cadera y hombros suben a la misma velocidad, espalda neutra todo el recorrido.", img: "https://wger.de/media/exercise-images/184/1709c405-620a-4d07-9658-fade2b66a2df.jpeg.400x400_q85.jpg" },
+    { name: "Prensa/sentadilla frontal", muscle: "Cuádriceps", sets: 3, reps: "10-12", cue: "Controla el descenso. No dejes que la espalda baja se despegue del respaldo (prensa) o se redondee (frontal).", img: "https://wger.de/media/exercise-images/371/d2136f96-3a43-4d4c-9944-1919c4ca1ce1.webp.400x400_q85.png" },
+    { name: "Curl femoral", muscle: "Isquios", sets: 3, reps: "12-15", cue: "Flexiona la rodilla llevando el talón al glúteo, controla la vuelta.", img: "https://wger.de/media/exercise-images/364/b318dde9-f5f2-489f-940a-cd864affb9e3.png.400x400_q85.png" },
+    { name: "Zancadas caminando", muscle: "Cuádriceps / glúteo", sets: 3, reps: "12 c/pierna", cue: "Paso largo hacia adelante, alterna piernas caminando; la rodilla delantera no rebasa mucho la punta del pie.", img: "https://wger.de/media/exercise-images/984/5c7ffe68-e7b2-47f3-a22a-f9cc28640432.png.400x400_q85.jpg" },
+    { name: "Elevación gemelos sentado", muscle: "Pantorrilla", sets: 4, reps: "15-20", cue: "Sube en punta de pies lo más alto posible, baja controlado más allá de la horizontal para estirar.", img: "https://wger.de/media/exercise-images/1620/edd40e39-e337-4460-a8dd-6127d40ddd16.jpeg.400x400_q85.jpg" },
+    { name: "Plancha con elevación pierna", muscle: "Core", sets: 3, unit: "s", reps: "12", cue: "Plancha estándar; eleva una pierna manteniendo la cadera nivelada, alterna sin perder la línea del cuerpo.", img: "https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png.400x400_q85.png" },
   ]},
+};
+
+// Calentamiento específico por día (5-8 min antes de cada sesión).
+const WARMUPS = {
+  push: [
+    "5 min de cardio suave (cuerda, remo o bici) para subir la temperatura.",
+    "Círculos de hombro: 15 hacia adelante, 15 hacia atrás.",
+    "Rotaciones externas con banda o mancuerna ligera: 2×12.",
+    "Flexiones de rodillas suaves (1-2 series, sin llegar al fallo).",
+    "Movilidad de muñeca: círculos y flexión/extensión, 30s por lado.",
+  ],
+  pull: [
+    "5 min de cardio suave para activar.",
+    "Dead hang suave: 2×15-20s (activa hombros y agarre sin fatigar).",
+    "Face pulls con banda ligera: 2×15.",
+    "Círculos de brazo hacia atrás, 15 por dirección.",
+    "Remo invertido con ángulo fácil: 1-2 series ligeras.",
+  ],
+  legs: [
+    "5 min de cardio suave (bici, saltos suaves o trote).",
+    "Sentadilla con peso corporal: 2×12-15.",
+    "Zancadas caminando sin peso: 10 pasos.",
+    "Círculos de cadera y balanceo de pierna (leg swings): 10 por lado.",
+    "Puente de glúteo: 2×12.",
+  ],
+  upper: [
+    "5 min de cardio suave.",
+    "Dead hang suave: 2×15-20s.",
+    "Círculos de hombro + rotaciones externas con banda: 2×12.",
+    "Remo invertido fácil: 1-2 series ligeras.",
+    "Movilidad de muñeca y plancha corta de activación: 15-20s.",
+  ],
+  lower: [
+    "5 min de cardio suave.",
+    "Puente de glúteo: 2×15.",
+    "Bisagra de cadera con solo el cuerpo (prep. peso muerto): 2×12.",
+    "Sentadilla con peso corporal: 2×12-15.",
+    "Círculos de cadera y leg swings: 10 por lado.",
+  ],
 };
 
 const STORE_KEY = "calistenia_logs_v1";
@@ -662,6 +725,10 @@ function lastDoneForDay(dayKey){
   return rows.reduce((max, l) => l.date > max ? l.date : max, rows[0].date);
 }
 
+function todaysDayKeys(){
+  return Array.from(new Set(activeLogs().filter(l => l.date === todayStr()).map(l => l.day)));
+}
+
 function sessionsThisWeek(){
   const monday = mondayOf(new Date());
   return new Set(activeLogs().filter(l => l.date >= monday).map(l => l.date)).size;
@@ -686,14 +753,22 @@ function renderHome(){
   const more = sug.exercises.length > 3 ? ` y ${sug.exercises.length - 3} más` : "";
   const last = lastDoneForDay(sugKey);
 
+  const doneToday = todaysDayKeys();
+  const doneTodayBanner = doneToday.length
+    ? `<div class="done-today"><span class="dot"></span><span>Ya entrenaste hoy: <b>${doneToday.map(k => DAYS[k].label).join(", ")}</b>. La siguiente sugerencia es para tu próxima sesión.</span></div>`
+    : "";
+  const badgeLabel = doneToday.length ? "Sugerido para tu próxima sesión" : "Sugerido para hoy";
+  const startLabel = doneToday.length ? "Empezar de todos modos" : "Empezar entrenamiento";
+
   document.getElementById("suggestedWrap").innerHTML = `
+    ${doneTodayBanner}
     <div class="card-suggested">
-      <span class="badge">Sugerido para hoy</span>
+      <span class="badge">${badgeLabel}</span>
       <h2>${sug.label}</h2>
       <div class="sub">${sug.sub} · ${sug.exercises.length} ejercicios</div>
       <div class="ex-preview"><b>Incluye:</b> ${preview}${more}</div>
       ${last ? `<div class="last-done">Última vez que hiciste ${sug.label}: ${formatDateShort(last)}</div>` : ""}
-      <button type="button" class="btn-primary" id="startSuggestedBtn">Empezar entrenamiento</button>
+      <button type="button" class="btn-primary" id="startSuggestedBtn">${startLabel}</button>
     </div>
   `;
   document.getElementById("startSuggestedBtn").onclick = () => startWorkout(sugKey);
@@ -758,11 +833,16 @@ function renderWorkout(){
   document.getElementById("workoutTitle").textContent = day.label;
   document.getElementById("workoutSub").textContent = day.sub;
 
+  document.getElementById("warmupCard").open = false;
+  document.getElementById("warmupList").innerHTML = (WARMUPS[activeWorkout] || [])
+    .map(step => `<li>${step}</li>`).join("");
+
   const list = document.getElementById("exerciseList");
   list.innerHTML = "";
   day.exercises.forEach((ex, exIdx) => {
     const prev = previousMap(ex.name);
     const unit = ex.unit === "s" ? "s" : "reps";
+    const recoUnit = ex.unit === "s" ? "s" : "reps";
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
@@ -770,10 +850,11 @@ function renderWorkout(){
         <div>
           <h3>${ex.name}</h3>
           <div class="muscle">${ex.muscle}</div>
+          ${ex.reps ? `<div class="reco">Recomendado: ${ex.sets} × ${ex.reps}${recoUnit === "s" ? "s" : ""}</div>` : ""}
         </div>
         <button type="button" class="help-q" aria-expanded="false" aria-label="Ver técnica de ${ex.name}">?</button>
       </div>
-      <div class="cue">${ex.cue}</div>
+      <div class="cue">${ex.img ? `<img class="cue-img" src="${ex.img}" alt="Ejemplo de ${ex.name}" loading="lazy">` : ""}${ex.cue}</div>
       <div class="set-table-head">
         <span></span><span>Anterior</span><span>${weightUnit}</span><span>${unit === "s" ? "Seg" : "Reps"}</span><span></span>
       </div>
