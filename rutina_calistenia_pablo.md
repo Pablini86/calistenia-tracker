@@ -49,7 +49,7 @@ Progresión: sube reps hasta el techo del rango, luego añade peso (lastre/mancu
 
 ## Día 5 — Lower + Core
 1. Peso muerto convencional (barra) — 4x6-8
-2. Prensa o sentadilla frontal — 3x10-12
+2. Sentadilla frontal — 3x10-12
 3. Curl femoral — 3x12-15
 4. Zancadas caminando — 3x12 por pierna
 5. Elevación de gemelos sentado — 4x15-20
@@ -101,7 +101,7 @@ Progresión: sube reps hasta el techo del rango, luego añade peso (lastre/mancu
 
 **Peso muerto convencional** — barra pegada a las piernas, cadera y hombros suben a la misma velocidad, espalda neutra todo el recorrido. Cadena posterior completa.
 
-**Prensa/sentadilla frontal** — controla el descenso, no dejes que la espalda baja se despegue del respaldo (prensa) o se redondee (frontal). Cuádriceps.
+**Sentadilla frontal** — barra apoyada en los hombros por delante (o goblet con mancuerna/kettlebell), controla el descenso, no dejes que la espalda baja se redondee. Cuádriceps.
 
 **Curl femoral** — flexiona la rodilla llevando el talón al glúteo, controla la vuelta. Isquiotibiales.
 
