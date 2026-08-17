@@ -571,13 +571,17 @@ let logs = JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
 let currentTab = "home";
 let activeWorkout = null; // day key or null
 let chartInstance = null;
+let historyChartInstance = null;
 let progressMode = "exercise";
 
 function saveLogs(){
   localStorage.setItem(STORE_KEY, JSON.stringify(logs));
   scheduleServerPush();
 }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
+function toLocalIso(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function todayStr(){ return toLocalIso(new Date()); }
 
 /* ---------------- UNIDAD DE PESO (kg/lb) ---------------- */
 // Todo se guarda siempre en kg (así ya funcionaba, y así se comparan bien
@@ -780,7 +784,7 @@ function mondayOf(date){
   const d = new Date(date);
   const day = (d.getDay() + 6) % 7;
   d.setDate(d.getDate() - day);
-  return d.toISOString().slice(0,10);
+  return toLocalIso(d);
 }
 function mondayOfIso(iso){
   const d = new Date(iso + "T00:00:00");
@@ -1200,6 +1204,17 @@ function drawProgress(exName){
   });
 }
 
+function weeklyCounts(sessionList){
+  const map = new Map();
+  sessionList.forEach(sess => {
+    const monday = mondayOfIso(sess.date);
+    const key = monday.getTime();
+    if (!map.has(key)) map.set(key, { monday, count: 0 });
+    map.get(key).count++;
+  });
+  return Array.from(map.values()).sort((a,b) => a.monday - b.monday);
+}
+
 function renderHistoryList(){
   const wrap = document.getElementById("byHistory");
   const sessions = {};
@@ -1209,12 +1224,43 @@ function renderHistoryList(){
   });
   const sessionList = Object.values(sessions).sort((a,b) => b.date.localeCompare(a.date));
 
+  if (historyChartInstance){ historyChartInstance.destroy(); historyChartInstance = null; }
+
   if (sessionList.length === 0){
     wrap.innerHTML = `<div class="empty">Aún no registras ningún entrenamiento.<br>Empieza uno desde Inicio y aquí vas a ver tu historial completo.</div>`;
     return;
   }
 
-  wrap.innerHTML = "";
+  const weeks = weeklyCounts(sessionList).slice(-12);
+  wrap.innerHTML = `<div class="chart-wrap" style="height:160px;"><canvas id="historyChart"></canvas></div>`;
+
+  if (typeof Chart === "undefined"){
+    document.querySelector("#byHistory .chart-wrap").innerHTML = `<div class="empty">La gráfica no cargó (sin conexión). Tu historial sigue abajo.</div>`;
+  } else {
+    const ctx = document.getElementById("historyChart").getContext("2d");
+    historyChartInstance = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: weeks.map(w => `${w.monday.getDate()} ${MON[w.monday.getMonth()]}`),
+        datasets: [{
+          label: "Entrenos por semana",
+          data: weeks.map(w => w.count),
+          backgroundColor: "#0B6FF6",
+          borderRadius: 4,
+          maxBarThickness: 28,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: "#E5E7EB" } },
+          x: { grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
   let lastWeekKey = null;
   sessionList.forEach((sess, i) => {
     const monday = mondayOfIso(sess.date);
