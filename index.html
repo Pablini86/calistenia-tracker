@@ -1061,10 +1061,35 @@ function showTab(tab){
 
 /* ---------------- PROGRESS ---------------- */
 
-function allExerciseNames(){
-  const set = new Set();
-  ORDER.forEach(k => DAYS[k].exercises.forEach(e => set.add(e.name)));
-  return Array.from(set);
+function groupedExerciseNames(){
+  const seen = new Set();
+  const groups = [];
+  ORDER.forEach(k => {
+    const names = [];
+    DAYS[k].exercises.forEach(e => {
+      if (seen.has(e.name)) return;
+      seen.add(e.name);
+      names.push(e.name);
+    });
+    if (names.length) groups.push({ label: DAYS[k].label, names });
+  });
+  return groups;
+}
+
+function exerciseMeta(name){
+  for (const k of ORDER){
+    const ex = DAYS[k].exercises.find(e => e.name === name);
+    if (ex) return ex;
+  }
+  return null;
+}
+
+function formatSetDisplay(r, unit){
+  if (unit === "s"){
+    const extra = r.weight ? ` (+${kgToUnit(r.weight)}${weightUnit})` : "";
+    return `${r.reps ?? "-"}s${extra}`;
+  }
+  return `${r.weight != null ? kgToUnit(r.weight) : "-"}${weightUnit}×${r.reps ?? "-"}`;
 }
 
 function renderProgress(){
@@ -1075,14 +1100,19 @@ function renderProgress(){
   if (progressMode === "exercise"){
     const sel = document.getElementById("exerciseSelect");
     if (sel.options.length === 0){
-      allExerciseNames().forEach(name => {
-        const opt = document.createElement("option");
-        opt.value = name; opt.textContent = name;
-        sel.appendChild(opt);
+      groupedExerciseNames().forEach(group => {
+        const og = document.createElement("optgroup");
+        og.label = group.label;
+        group.names.forEach(name => {
+          const opt = document.createElement("option");
+          opt.value = name; opt.textContent = name;
+          og.appendChild(opt);
+        });
+        sel.appendChild(og);
       });
       sel.onchange = () => drawProgress(sel.value);
     }
-    drawProgress(sel.value || sel.options[0]?.value);
+    drawProgress(sel.value || sel.querySelector("option")?.value);
   } else {
     renderHistoryList();
   }
@@ -1091,18 +1121,23 @@ function renderProgress(){
 function drawProgress(exName){
   const statsRow = document.getElementById("statsRow");
   if (!exName){ statsRow.innerHTML = ""; return; }
+  const isTime = exerciseMeta(exName)?.unit === "s";
   const rows = activeLogs().filter(l => l.exercise === exName).sort((a,b) => a.date.localeCompare(b.date));
   const byDate = {};
   rows.forEach(r => { (byDate[r.date] ||= []).push(r); });
   const dates = Object.keys(byDate).sort();
-  const maxWeightsKg = dates.map(d => Math.max(...byDate[d].map(r => r.weight || 0)));
-  const maxWeightsDisplay = maxWeightsKg.map(kgToUnit);
 
-  const bestWeight = maxWeightsDisplay.length ? Math.max(...maxWeightsDisplay) : 0;
+  const seriesKg = dates.map(d => Math.max(...byDate[d].map(r => r.weight || 0)));
+  const seriesSeconds = dates.map(d => Math.max(...byDate[d].map(r => r.reps || 0)));
+  const chartData = isTime ? seriesSeconds : seriesKg.map(kgToUnit);
+  const bestValue = chartData.length ? Math.max(...chartData) : 0;
+  const statLabel = isTime ? "Mejor marca (s)" : `Peso máx (${weightUnit})`;
+  const chartLabel = exName + (isTime ? " — mejor marca (s)" : ` — peso máx (${weightUnit})`);
+
   const lastDate = dates.length ? dates[dates.length - 1] : null;
   statsRow.innerHTML = `
     <div class="stat"><div class="n mono">${dates.length}</div><div class="l">Entrenos</div></div>
-    <div class="stat"><div class="n mono">${bestWeight || "—"}</div><div class="l">Peso máx (${weightUnit})</div></div>
+    <div class="stat"><div class="n mono">${bestValue || "—"}</div><div class="l">${statLabel}</div></div>
     <div class="stat"><div class="n mono">${lastDate ? formatDateShort(lastDate) : "—"}</div><div class="l">Última vez</div></div>
   `;
 
@@ -1116,7 +1151,7 @@ function drawProgress(exName){
     chartInstance = new Chart(ctx, {
       type: "line",
       data: { labels: dates, datasets: [{
-        label: exName + ` — peso máx (${weightUnit})`, data: maxWeightsDisplay,
+        label: chartLabel, data: chartData,
         borderColor: "#0B6FF6", backgroundColor: "#0B6FF61A",
         pointBackgroundColor: "#0B6FF6", pointBorderColor: "#0B6FF6",
         tension: 0.25, fill: true,
@@ -1136,7 +1171,7 @@ function drawProgress(exName){
     return;
   }
   dates.slice().reverse().forEach(d => {
-    const sets = byDate[d].sort((a,b) => a.set - b.set).map(r => `${r.weight != null ? kgToUnit(r.weight) : "-"}${weightUnit}×${r.reps ?? "-"}`).join("  ");
+    const sets = byDate[d].sort((a,b) => a.set - b.set).map(r => formatSetDisplay(r, isTime ? "s" : "reps")).join("  ");
     const tr = document.createElement("tr");
     tr.innerHTML = `<td>${formatDateShort(d)}</td><td class="sets">${sets}</td>`;
     tbody.appendChild(tr);
@@ -1166,7 +1201,8 @@ function renderHistoryList(){
     const card = document.createElement("div");
     card.className = "session-card";
     const exLines = Object.entries(byEx).map(([name, sets]) => {
-      const setsTxt = sets.sort((a,b) => a.set - b.set).map(r => `${r.weight != null ? kgToUnit(r.weight) : "-"}${weightUnit}×${r.reps ?? "-"}`).join("  ");
+      const isTime = exerciseMeta(name)?.unit === "s";
+      const setsTxt = sets.sort((a,b) => a.set - b.set).map(r => formatSetDisplay(r, isTime ? "s" : "reps")).join("  ");
       return `<div class="ex-line"><b>${name}</b><span>${setsTxt}</span></div>`;
     }).join("");
     card.innerHTML = `
