@@ -50,7 +50,7 @@ Progresión: sube reps hasta el techo del rango, luego añade peso (lastre/mancu
 ## Día 5 — Lower + Core
 1. Peso muerto convencional (barra) — 4x6-8
 2. Sentadilla frontal — 3x10-12
-3. Curl femoral — 3x12-15
+3. Nordic curl — 3x6-10
 4. Zancadas caminando — 3x12 por pierna
 5. Elevación de gemelos sentado — 4x15-20
 6. Plancha con elevación de pierna — 3x12
@@ -103,7 +103,7 @@ Progresión: sube reps hasta el techo del rango, luego añade peso (lastre/mancu
 
 **Sentadilla frontal** — barra apoyada en los hombros por delante (o goblet con mancuerna/kettlebell), controla el descenso, no dejes que la espalda baja se redondee. Cuádriceps.
 
-**Curl femoral** — flexiona la rodilla llevando el talón al glúteo, controla la vuelta. Isquiotibiales.
+**Nordic curl** — de rodillas con los tobillos anclados (compañero o algo fijo), baja el torso lo más lento posible resistiendo con los isquios, ayúdate con las manos al final si hace falta. Isquiotibiales.
 
 ## ¿Necesito que anotes pesos y progreso?
 
