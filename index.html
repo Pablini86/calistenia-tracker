@@ -174,6 +174,12 @@
 
   /* ---------- cooldown card ---------- */
   .cooldown-card{ margin:16px 0 0; }
+  .stretch-item{ margin-bottom:10px; }
+  .stretch-item:last-child{ margin-bottom:0; }
+  .stretch-row{ display:flex; align-items:center; gap:10px; }
+  .stretch-row span:not(.warmup-dot){ flex:1; }
+  .stretch-item .cue{ margin:8px 0 0; }
+  .cue-note{ display:block; color:var(--ink-faint); font-style:italic; }
 
   /* ---------- "ya entrenaste hoy" banner ---------- */
   .done-today{
@@ -907,13 +913,21 @@ function renderWorkout(){
     `).join("");
 
   document.getElementById("cooldownCard").open = false;
-  document.getElementById("cooldownList").innerHTML = (COOLDOWNS[activeWorkout] || [])
+  const cooldownList = document.getElementById("cooldownList");
+  cooldownList.innerHTML = (COOLDOWNS[activeWorkout] || [])
     .map(step => `
-      <li class="warmup-item">
-        ${step.img ? `<img src="${step.img}" alt="" loading="lazy">` : `<span class="warmup-dot"></span>`}
-        <span>${step.text}</span>
+      <li class="stretch-item">
+        <div class="stretch-row">
+          <span class="warmup-dot"></span>
+          <span>${step.text}</span>
+          <button type="button" class="help-q" aria-expanded="false" aria-label="Ver foto de ${step.text}">?</button>
+        </div>
+        <div class="cue">${step.img
+          ? `<img class="cue-img" src="${step.img}" alt="Ejemplo de ${step.text}" loading="lazy">`
+          : `<span class="cue-note">Todavía no tengo una foto para este estiramiento.</span>`}</div>
       </li>
     `).join("");
+  cooldownList.querySelectorAll(".help-q").forEach(btn => btn.onclick = (e) => toggleCue(e.currentTarget));
 
   const list = document.getElementById("exerciseList");
   list.innerHTML = "";
@@ -965,7 +979,7 @@ function renderWorkout(){
 }
 
 function toggleCue(btn){
-  const cue = btn.closest(".card").querySelector(".cue");
+  const cue = btn.closest(".card, .stretch-item").querySelector(".cue");
   const open = cue.classList.toggle("open");
   btn.setAttribute("aria-expanded", open ? "true" : "false");
 }
