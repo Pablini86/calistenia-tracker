@@ -22,6 +22,7 @@ Progresión: sube reps hasta el techo del rango, luego añade peso (lastre/mancu
 4. Press banca con mancuernas — 3x10-12
 5. Extensión tríceps en polea/mancuerna — 3x12-15
 6. Plancha (core) — 3x30-45s
+7. Estiramiento final (5 min) — pecho, tríceps, hombro + respiración
 
 ## Día 2 — Pull A (espalda/bíceps)
 1. Dominadas (o negativas/asistidas si aún no hay reps limpias) — 4x5-8
@@ -30,6 +31,7 @@ Progresión: sube reps hasta el techo del rango, luego añade peso (lastre/mancu
 4. Curl bíceps mancuerna — 3x10-12
 5. Face pull o remo al mentón (postura) — 3x12-15
 6. Dead hang (agarre) — 3x20-30s
+7. Estiramiento final (5 min) — espalda/dorsales, bíceps + respiración
 
 ## Día 3 — Legs A
 1. Sentadilla con barra o goblet — 4x8-10
@@ -38,6 +40,7 @@ Progresión: sube reps hasta el techo del rango, luego añade peso (lastre/mancu
 4. Sentadilla búlgara — 3x10 por pierna
 5. Elevación de gemelos — 4x15-20
 6. Rodilla al pecho colgado (core) — 3x12-15
+7. Estiramiento final (5 min) — cuádriceps, isquios, glúteo + respiración
 
 ## Día 4 — Upper (skill/fuerza, empuje+tirón combinados)
 1. Dominadas explosivas (prep muscle-up) — 4x5-6
@@ -46,6 +49,7 @@ Progresión: sube reps hasta el techo del rango, luego añade peso (lastre/mancu
 4. Fondos lastrados o con más rango — 3x8-10
 5. L-sit (core/skill) — 3x10-20s
 6. Dead hang (agarre) — 3x20-30s
+7. Estiramiento final (5 min) — pecho, hombro, dorsales + respiración
 
 ## Día 5 — Lower + Core
 1. Peso muerto convencional (barra) — 4x6-8
@@ -54,6 +58,7 @@ Progresión: sube reps hasta el techo del rango, luego añade peso (lastre/mancu
 4. Zancadas caminando — 3x12 por pierna
 5. Elevación de gemelos sentado — 4x15-20
 6. Plancha con elevación de pierna — 3x12
+7. Estiramiento final (5 min) — cuádriceps, isquios, espalda baja + respiración
 
 ## Guía de ejercicios (técnica y foco)
 

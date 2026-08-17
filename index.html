@@ -172,6 +172,9 @@
     flex:none; width:6px; height:6px; margin:0 15px 0 1px; border-radius:50%; background:var(--ink-faint);
   }
 
+  /* ---------- cooldown card ---------- */
+  .cooldown-card{ margin:16px 0 0; }
+
   /* ---------- "ya entrenaste hoy" banner ---------- */
   .done-today{
     display:flex; align-items:center; gap:10px; background:var(--green-soft); border:1px solid #B9E7D0;
@@ -344,6 +347,14 @@
       </div>
     </details>
     <div id="exerciseList"></div>
+    <details class="info cooldown-card" id="cooldownCard">
+      <summary>Estiramiento final (5 min)
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="info-body">
+        <ul class="warmup-list" id="cooldownList"></ul>
+      </div>
+    </details>
   </main>
   <div class="workout-save-bar">
     <div class="workout-save-bar-inner">
@@ -506,6 +517,41 @@ const WARMUPS = {
     { text: "Bisagra de cadera con solo el cuerpo (prep. peso muerto): 2×12.", img: IMG_HIP_HINGE },
     { text: "Sentadilla con peso corporal: 2×12-15.", img: IMG_SQUAT_BW },
     { text: "Círculos de cadera y leg swings: 10 por lado." },
+  ],
+};
+
+// Estiramiento final por día (5 min, al terminar la sesión).
+// Mantené cada postura respirando lento y profundo, sin rebotar.
+const COOLDOWNS = {
+  push: [
+    { text: "Estiramiento de pecho en marco de puerta: 30s por lado." },
+    { text: "Estiramiento de tríceps con el brazo detrás de la cabeza: 30s por lado." },
+    { text: "Estiramiento de hombro cruzando el brazo al pecho: 30s por lado." },
+    { text: "Respiración profunda y lenta: 1 min para bajar el ritmo." },
+  ],
+  pull: [
+    { text: "Postura del niño para relajar espalda y dorsales: 45-60s." },
+    { text: "Estiramiento de bíceps con el brazo extendido contra la pared: 30s por lado." },
+    { text: "Gato-camello para espalda baja: 6-8 repeticiones lentas." },
+    { text: "Respiración profunda y lenta: 1 min para bajar el ritmo." },
+  ],
+  legs: [
+    { text: "Estiramiento de cuádriceps de pie: 30s por lado." },
+    { text: "Estiramiento de isquios (de pie o sentado): 30s por lado." },
+    { text: "Estiramiento de glúteo (figura 4): 30s por lado." },
+    { text: "Postura del niño para relajar la espalda baja: 45-60s." },
+  ],
+  upper: [
+    { text: "Estiramiento de pecho en marco de puerta: 30s por lado." },
+    { text: "Estiramiento de hombro cruzando el brazo al pecho: 30s por lado." },
+    { text: "Postura del niño para relajar espalda y dorsales: 45-60s." },
+    { text: "Respiración profunda y lenta: 1 min para bajar el ritmo." },
+  ],
+  lower: [
+    { text: "Estiramiento de cuádriceps de pie: 30s por lado." },
+    { text: "Estiramiento de isquios (de pie o sentado): 30s por lado." },
+    { text: "Torsión de columna acostado: 30s por lado." },
+    { text: "Postura del niño para relajar la espalda baja: 45-60s." },
   ],
 };
 
@@ -853,6 +899,15 @@ function renderWorkout(){
 
   document.getElementById("warmupCard").open = false;
   document.getElementById("warmupList").innerHTML = (WARMUPS[activeWorkout] || [])
+    .map(step => `
+      <li class="warmup-item">
+        ${step.img ? `<img src="${step.img}" alt="" loading="lazy">` : `<span class="warmup-dot"></span>`}
+        <span>${step.text}</span>
+      </li>
+    `).join("");
+
+  document.getElementById("cooldownCard").open = false;
+  document.getElementById("cooldownList").innerHTML = (COOLDOWNS[activeWorkout] || [])
     .map(step => `
       <li class="warmup-item">
         ${step.img ? `<img src="${step.img}" alt="" loading="lazy">` : `<span class="warmup-dot"></span>`}
